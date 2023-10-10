@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<?ccsproject version="1.0"?>
+<projectOptions>
+	<ccsVersion value="10.0.0"/>
+	<deviceVariant value="MSP430FR6047"/>
+	<deviceFamily value="MSP430"/>
+	<deviceEndianness value="little"/>
+	<codegenToolVersion value="20.8.0.STS"/>
+	<isElfFormat value="true"/>
+	<linkerCommandFile value="lnk_msp430fr6047.cmd"/>
+	<rts value="libc.a"/>
+	<createSlaveProjects value=""/>
+	<templateProperties value="id=MSP430FR6047EVM_USS_Water_Demo.projectspec.MSP430FR6047EVM_USS_Water_Demo"/>
+	<origin value="D:\Dropbox\UCAwsp\msp\UltrasonicWaterFR604x_02_40_00_00\examples\USS_Water_Demo\CCS\MSP430FR6047EVM_USS_Water_Demo.projectspec"/>
+	<filesToOpen value=""/>
+	<connection value="common/targetdb/connections/TIMSP430-USB.xml"/>
+	<isTargetManual value="false"/>
+	<sourceLookupPath value=""/>
+</projectOptions>
