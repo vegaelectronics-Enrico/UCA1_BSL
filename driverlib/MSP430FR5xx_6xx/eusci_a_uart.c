@@ -46,7 +46,7 @@
 
 #ifdef __MSP430_HAS_EUSCI_Ax__
 #include "eusci_a_uart.h"
-
+#include <stdbool.h>
 #include <assert.h>
 
 bool EUSCI_A_UART_init(uint16_t baseAddress, EUSCI_A_UART_initParam *param)
@@ -131,6 +131,23 @@ uint8_t EUSCI_A_UART_receiveData (uint16_t baseAddress)
 
     return ( HWREG16(baseAddress + OFS_UCAxRXBUF)) ;
 }
+
+uint8_t EUSCI_A_UART_receiveData_timeout (uint16_t baseAddress, uint32_t timeoutSet, bool* hasTimeout)
+{
+    uint32_t timeoutCount = timeoutSet;
+    //If interrupts are not used, poll for flags
+    if (!(HWREG16(baseAddress + OFS_UCAxIE) & UCRXIE)){
+        //Poll for receive interrupt flag
+        while ((!(HWREG16(baseAddress + OFS_UCAxIFG) & UCRXIFG)) && (timeoutCount > 0))
+            timeoutCount--;
+    }
+    if(timeoutCount == 0)
+        *hasTimeout = true;
+    else
+        *hasTimeout = false;
+    return ( HWREG16(baseAddress + OFS_UCAxRXBUF)) ;
+}
+
 
 void EUSCI_A_UART_enableInterrupt (uint16_t baseAddress,
     uint8_t mask

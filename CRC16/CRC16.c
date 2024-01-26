@@ -19,10 +19,17 @@ void GenerateCRC16(unsigned char *ByteStart, unsigned short dataLenght, unsigned
     {
         CheckSum = CheckSum^(unsigned short) (*ByteStart); // XOR
         for (i = 8; i > 0; i--)
-            if ((CheckSum)&0x0001)
-                CheckSum = (CheckSum >> 1)^0xa001;
-            else
+        {
+            if((CheckSum & 0x0001) != 0)
+            {
                 CheckSum >>= 1;
+                CheckSum ^= 0xA001;
+            }
+            else
+            {
+                CheckSum >>= 1;
+            }
+        }
         ByteStart++;
     }
     highCRC = CheckSum >> 8;

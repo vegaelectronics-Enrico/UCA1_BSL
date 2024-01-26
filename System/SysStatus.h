@@ -38,6 +38,18 @@ extern _sysConfig_t sysConfig;
 
 //--
 
+typedef struct
+{
+    unsigned RebootFromModbus :1;
+    unsigned HSPLL_resetBOR :1;
+    unsigned NU: 14;
+    uint16_t CtrlUINT;
+}_SharedCtrlStruct_t;
+
+extern _SharedCtrlStruct_t* SharedCtrlStruct;
+
+//--
+
 void detectHwConfigurationPins(void);
 
 #endif /* SYSTEM_SYSSTATUS_H_ */

@@ -10,12 +10,6 @@
 
 #include <stdint.h>
 
-#define DEBUG_CONS              false   //enables the prints on the IDE debug console
-
-
-//#define LEGAL_FW                false
-
-
 /*
  * OLD hardware and display compatibility definitions
  */

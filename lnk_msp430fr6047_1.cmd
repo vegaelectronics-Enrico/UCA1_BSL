@@ -65,14 +65,18 @@ MEMORY
     TLVMEM                  : origin = 0x1A00, length = 0x100
     BOOTROM                 : origin = 0x1B00, length = 0x100
     RAM                     : origin = 0x1C00, length = 0x1000
-    BOOTLOADER				: origin = 0x4000, length = 0x1000
-    BOOTLOADER2				: origin = 0x5000, length = 0x2C00
+    BOOTLOADER				: origin = 0x4000, length = 0x3C00
     //RELOC_INT				: origin = 0x7C00, length = 0x80	//re-defined interrupt table
-    FW_CRC32				: origin = 0x7C80, length = 0x80
-    MAIN_PROGRAM            : origin = 0x7D00, length = 0x8100, fill = 0xFFFF
+    FREE_MEM_1				: origin = 0x7C6E, length = 0x12
+    MAIN_PROGRAM            : origin = 0x7C80, length = 0x817E
+    DELIMITER_1				: origin = 0xFDFE, length = 2	//delimiters are necessary to have the code sections starting with @..... and ending before another @...... on the .txt file
+    DELIMITER_2				: origin = 0x10000, length = 2
+    MAIN_PROGRAM2         	: origin = 0x10002,length = 0x2F7FC
+    DELIMITER_3				: origin = 0x3F7FE, length = 2
+    FW_CRC32				: origin = 0x3F800, length = 0x4
+    FW_OTHER_INFO			: origin = 0x3F804, length = 0x3FC
 
-    MAIN_PROGRAM2         	: origin = 0x10000,length = 0x2FC00//, fill = 0xFFFF
-    FRAM_PAR_LOG			: origin = 0x3FC00,length = 0x0400, fill = 0xFFFF	//parameters log modify attempt
+    FRAM_PAR_LOG			: origin = 0x3FC00,length = 0x0400	//parameters log modify attempt
     FRAM_USS_PARAM			: origin = 0x40000,length = 0x400	//data section reserved to USS FRAM variables / parameters
     FRAM_VAR				: origin = 0x40400,length = 0x3B00	//data section used as RAM for variables
     OTHER_FRAM_NO_ERASE		: origin = 0x43F00,length = 0xAC
@@ -81,74 +85,75 @@ MEMORY
     LIB_VERSION             : origin = 0x43FE8,length = 0x0008
     BATTERY_DATA    		: origin = 0x43FF0,length = 0x0010
 
+    BRINTVEC				: origin = 0xFE00, length = 0x180, fill = 0xFFFF	//interrupt branch section: contains jump instructions that point to the PROXY_VECTORS table
+
+
     JTAGSIGNATURE           : origin = 0xFF80, length = 0x0004, fill = 0xFFFF
     BSLSIGNATURE            : origin = 0xFF84, length = 0x0004, fill = 0xFFFF
     IPESIGNATURE            : origin = 0xFF88, length = 0x0008, fill = 0xFFFF
 
-    BRINTVEC				: origin = 0xFE00, length = 0x180	//interrupt branch section: contains jump instructions that point to the PROXY_VECTORS table
-    PROXY_VECTORS			: origin = 0xFF90, length = 0x6E	//contains the RELOC_INT interrupt table
+    PROXY_VECTORS			: origin = 0xFF90, length = 0x6E
     RESET                   : origin = 0xFFFE, length = 0x0002
 
-
-		/*
+	/*
 	relocated interrupt table
 	*/
-    INT00                   : origin = 0x7C00, length = 0x0002
-    INT01                   : origin = 0x7C02, length = 0x0002
-    INT02                   : origin = 0x7C04, length = 0x0002
-    INT03                   : origin = 0x7C06, length = 0x0002
-    INT04                   : origin = 0x7C08, length = 0x0002
-    INT05                   : origin = 0x7C0A, length = 0x0002
-    INT06                   : origin = 0x7C0C, length = 0x0002
-    INT07                   : origin = 0x7C0E, length = 0x0002
-    INT08                   : origin = 0x7C10, length = 0x0002
-    INT09                   : origin = 0x7C12, length = 0x0002
-    INT10                   : origin = 0x7C14, length = 0x0002
-    INT11                   : origin = 0x7C16, length = 0x0002
-    INT12                   : origin = 0x7C18, length = 0x0002
-    INT13                   : origin = 0x7C1A, length = 0x0002
-    INT14                   : origin = 0x7C1C, length = 0x0002
-    INT15                   : origin = 0x7C1E, length = 0x0002
-    INT16                   : origin = 0x7C20, length = 0x0002
-    INT17                   : origin = 0x7C22, length = 0x0002
-    INT18                   : origin = 0x7C24, length = 0x0002
-    INT19                   : origin = 0x7C26, length = 0x0002
-    INT20                   : origin = 0x7C28, length = 0x0002
-    INT21                   : origin = 0x7C2A, length = 0x0002
-    INT22                   : origin = 0x7C2C, length = 0x0002
-    INT23                   : origin = 0x7C2E, length = 0x0002
-    INT24                   : origin = 0x7C30, length = 0x0002
-    INT25                   : origin = 0x7C32, length = 0x0002
-    INT26                   : origin = 0x7C34, length = 0x0002
-    INT27                   : origin = 0x7C36, length = 0x0002
-    INT28                   : origin = 0x7C38, length = 0x0002
-    INT29                   : origin = 0x7C3A, length = 0x0002
-    INT30                   : origin = 0x7C3C, length = 0x0002
-    INT31                   : origin = 0x7C3E, length = 0x0002
-    INT32                   : origin = 0x7C40, length = 0x0002
-    INT33                   : origin = 0x7C42, length = 0x0002
-    INT34                   : origin = 0x7C44, length = 0x0002
-    INT35                   : origin = 0x7C46, length = 0x0002
-    INT36                   : origin = 0x7C48, length = 0x0002
-    INT37                   : origin = 0x7C4A, length = 0x0002
-    INT38                   : origin = 0x7C4C, length = 0x0002
-    INT39                   : origin = 0x7C4E, length = 0x0002
-    INT40                   : origin = 0x7C50, length = 0x0002
-    INT41                   : origin = 0x7C52, length = 0x0002
-    INT42                   : origin = 0x7C54, length = 0x0002
-    INT43                   : origin = 0x7C56, length = 0x0002
-    INT44                   : origin = 0x7C58, length = 0x0002
-    INT45                   : origin = 0x7C5A, length = 0x0002
-    INT46                   : origin = 0x7C5C, length = 0x0002
-    INT47                   : origin = 0x7C5E, length = 0x0002
-    INT48                   : origin = 0x7C60, length = 0x0002
-    INT49                   : origin = 0x7C62, length = 0x0002
-    INT50                   : origin = 0x7C64, length = 0x0002
-    INT51                   : origin = 0x7C66, length = 0x0002
-    INT52                   : origin = 0x7C68, length = 0x0002
-    INT53                   : origin = 0x7C6A, length = 0x0002
-    INT54                   : origin = 0x7C6C, length = 0x0002
-    //RESET					: origin = 0x7C6E, length = 0x0002
+    /*INT00                   : origin = 0x7C00, length = 0x0002, fill = 0xFFFF
+    INT01                   : origin = 0x7C02, length = 0x0002, fill = 0xFFFF
+    INT02                   : origin = 0x7C04, length = 0x0002, fill = 0xFFFF
+    INT03                   : origin = 0x7C06, length = 0x0002, fill = 0xFFFF
+    INT04                   : origin = 0x7C08, length = 0x0002, fill = 0xFFFF
+    INT05                   : origin = 0x7C0A, length = 0x0002, fill = 0xFFFF
+    INT06                   : origin = 0x7C0C, length = 0x0002, fill = 0xFFFF
+    INT07                   : origin = 0x7C0E, length = 0x0002, fill = 0xFFFF
+    INT08                   : origin = 0x7C10, length = 0x0002, fill = 0xFFFF
+    INT09                   : origin = 0x7C12, length = 0x0002, fill = 0xFFFF
+    INT10                   : origin = 0x7C14, length = 0x0002, fill = 0xFFFF
+    INT11                   : origin = 0x7C16, length = 0x0002, fill = 0xFFFF
+    INT12                   : origin = 0x7C18, length = 0x0002, fill = 0xFFFF
+    INT13                   : origin = 0x7C1A, length = 0x0002, fill = 0xFFFF
+    INT14                   : origin = 0x7C1C, length = 0x0002, fill = 0xFFFF
+    INT15                   : origin = 0x7C1E, length = 0x0002, fill = 0xFFFF
+    INT16                   : origin = 0x7C20, length = 0x0002, fill = 0xFFFF
+    INT17                   : origin = 0x7C22, length = 0x0002, fill = 0xFFFF
+    INT18                   : origin = 0x7C24, length = 0x0002, fill = 0xFFFF
+    INT19                   : origin = 0x7C26, length = 0x0002, fill = 0xFFFF
+    INT20                   : origin = 0x7C28, length = 0x0002, fill = 0xFFFF
+    INT21                   : origin = 0x7C2A, length = 0x0002, fill = 0xFFFF
+    INT22                   : origin = 0x7C2C, length = 0x0002, fill = 0xFFFF
+    INT23                   : origin = 0x7C2E, length = 0x0002, fill = 0xFFFF
+    INT24                   : origin = 0x7C30, length = 0x0002, fill = 0xFFFF
+    INT25                   : origin = 0x7C32, length = 0x0002, fill = 0xFFFF
+    INT26                   : origin = 0x7C34, length = 0x0002, fill = 0xFFFF
+    INT27                   : origin = 0x7C36, length = 0x0002, fill = 0xFFFF
+    INT28                   : origin = 0x7C38, length = 0x0002, fill = 0xFFFF
+    INT29                   : origin = 0x7C3A, length = 0x0002, fill = 0xFFFF
+    INT30                   : origin = 0x7C3C, length = 0x0002, fill = 0xFFFF
+    INT31                   : origin = 0x7C3E, length = 0x0002, fill = 0xFFFF
+    INT32                   : origin = 0x7C40, length = 0x0002, fill = 0xFFFF
+    INT33                   : origin = 0x7C42, length = 0x0002, fill = 0xFFFF
+    INT34                   : origin = 0x7C44, length = 0x0002, fill = 0xFFFF
+    INT35                   : origin = 0x7C46, length = 0x0002, fill = 0xFFFF
+    INT36                   : origin = 0x7C48, length = 0x0002, fill = 0xFFFF
+    INT37                   : origin = 0x7C4A, length = 0x0002, fill = 0xFFFF
+    INT38                   : origin = 0x7C4C, length = 0x0002, fill = 0xFFFF
+    INT39                   : origin = 0x7C4E, length = 0x0002, fill = 0xFFFF
+    INT40                   : origin = 0x7C50, length = 0x0002, fill = 0xFFFF
+    INT41                   : origin = 0x7C52, length = 0x0002, fill = 0xFFFF
+    INT42                   : origin = 0x7C54, length = 0x0002, fill = 0xFFFF
+    INT43                   : origin = 0x7C56, length = 0x0002, fill = 0xFFFF
+    INT44                   : origin = 0x7C58, length = 0x0002, fill = 0xFFFF
+    INT45                   : origin = 0x7C5A, length = 0x0002, fill = 0xFFFF
+    INT46                   : origin = 0x7C5C, length = 0x0002, fill = 0xFFFF
+    INT47                   : origin = 0x7C5E, length = 0x0002, fill = 0xFFFF
+    INT48                   : origin = 0x7C60, length = 0x0002, fill = 0xFFFF
+    INT49                   : origin = 0x7C62, length = 0x0002, fill = 0xFFFF
+    INT50                   : origin = 0x7C64, length = 0x0002, fill = 0xFFFF
+    INT51                   : origin = 0x7C66, length = 0x0002, fill = 0xFFFF
+    INT52                   : origin = 0x7C68, length = 0x0002, fill = 0xFFFF
+    INT53                   : origin = 0x7C6A, length = 0x0002, fill = 0xFFFF
+    INT54                   : origin = 0x7C6C, length = 0x0002, fill = 0xFFFF
+*/
 
     /*INT00                   : origin = 0xFF90, length = 0x0002
     INT01                   : origin = 0xFF92, length = 0x0002
@@ -249,52 +254,53 @@ SECTIONS
     } >0x4000
 
 
-    .cinit            : {}  > FRAM          /* Initialization tables             */
-    .binit            : {}  > FRAM          /* Boot-time Initialization tables   */
-    .pinit            : {}  > FRAM          /* C++ Constructor tables            */
-    .init_array       : {}  > FRAM          /* C++ Constructor tables            */
-    .mspabi.exidx     : {}  > FRAM          /* C++ Constructor tables            */
-    .mspabi.extab     : {}  > FRAM          /* C++ Constructor tables            */
+    .cinit            : {}  > BOOTLOADER          /* Initialization tables             */
+    .binit            : {}  > BOOTLOADER          /* Boot-time Initialization tables   */
+    .pinit            : {}  > BOOTLOADER          /* C++ Constructor tables            */
+    .init_array       : {}  > BOOTLOADER          /* C++ Constructor tables            */
+    .mspabi.exidx     : {}  > BOOTLOADER          /* C++ Constructor tables            */
+    .mspabi.extab     : {}  > BOOTLOADER          /* C++ Constructor tables            */
     .text:_isr:_c_int00_noargs_mpu : {} > _c_int00_address
-    .text:_isr        : {}  > FRAM          /* Code ISRs   						 */
-    .other_fram		  : {}  > OTHER_FRAM_NO_ERASE type = NOINIT	/* other data not inclided on the firmware */
+    //.freeMem1		  : {}  > FREE_MEM_1
+    .text:_isr        : {}  > BOOTLOADER          /* Code ISRs   						 */
+
     //.TI.persistent    : {}  > FRAM_VAR                 /* For #pragma persistent            */
     .brintvec 		  : {} > BRINTVEC            /* BRANCH INST PROGRAM INT VECTOR TABLE */
 	.proxy_vectors    : {} > PROXY_VECTORS
 #ifndef __USS_RUN_ALG_FROM_RAM__
-	.USS_ramfunc      : {}  > FRAM
+	.USS_ramfunc      : {}  > BOOTLOADER
 #endif
 
-#ifndef __LARGE_DATA_MODEL__
-    .const            : {} > FRAM           /* Constant data                     */
-#else
-    .const            : {} >> FRAM | FRAM2  /* Constant data                     */
-#endif
+//#ifndef __LARGE_DATA_MODEL__
+    .const            : {} > BOOTLOADER           /* Constant data                     */
+//#else
+//    .const            : {} >> BOOTLOADER | BOOTLOADER2  /* Constant data                     */
+//#endif
 
-#ifndef __LARGE_CODE_MODEL__
-    .text             : {} > FRAM           /* Code                              */
-#else
-    .text             : {} >> FRAM2 | FRAM  /* Code                              */
-#endif
+//#ifndef __LARGE_CODE_MODEL__
+    .text             : {} > BOOTLOADER           /* Code                              */
+//#else
+//    .text             : {} >> BOOTLOADER2 | BOOTLOADER  /* Code                              */
+//#endif
 
     #ifdef __TI_COMPILER_VERSION__
         #if __TI_COMPILER_VERSION__ >= 15009000
-            #ifndef __LARGE_CODE_MODEL__
-                .TI.ramfunc : {} load=FRAM, run=RAM, table(BINIT)
-            #else
-                .TI.ramfunc : {} load=FRAM | FRAM2, run=RAM, table(BINIT)
-            #endif
+            //#ifndef __LARGE_CODE_MODEL__
+                .TI.ramfunc : {} load=BOOTLOADER, run=RAM, table(BINIT)
+            //#else
+            //    .TI.ramfunc : {} load=BOOTLOADER | BOOTLOADER2, run=RAM, table(BINIT)
+            //#endif
         #endif
     #endif
 
 	#ifdef __USS_RUN_ALG_FROM_RAM__
 	    #ifdef __TI_COMPILER_VERSION__
 	        #if __TI_COMPILER_VERSION__ >= 15009000
-				#ifndef __LARGE_DATA_MODEL__
-	                .USS_ramfunc : {} load=FRAM, run=RAM, table(BINIT)
-				#else
-	                .USS_ramfunc : {} load=FRAM | FRAM2, run=RAM, table(BINIT)
-	        	#endif
+				//#ifndef __LARGE_DATA_MODEL__
+	                .USS_ramfunc : {} load=BOOTLOADER, run=RAM, table(BINIT)
+				//#else
+	            //    .USS_ramfunc : {} load=BOOTLOADER | BOOTLOADER2, run=RAM, table(BINIT)
+	        	//#endif
 		#endif
 	#endif
 #endif
@@ -309,9 +315,9 @@ SECTIONS
     } > IPESIGNATURE
 
     #ifdef __USS_RUN_ALG_FROM_RAM__
-        .bss        : {} > RAM | FRAM                 /* Global & static vars              */
-        .data       : {} > RAM | FRAM                 /* Global & static vars              */
-        .TI.noinit  : {} > RAM | FRAM                 /* For #pragma noinit                */
+        .bss        : {} > RAM | BOOTLOADER                 /* Global & static vars              */
+        .data       : {} > RAM | BOOTLOADER                 /* Global & static vars              */
+        .TI.noinit  : {} > RAM | BOOTLOADER                 /* For #pragma noinit                */
     #else
         .bss        : {} > RAM                 /* Global & static vars              */
         .data       : {} > RAM 			       /* Global & static vars              */
@@ -325,7 +331,7 @@ SECTIONS
     .leaStack    : {} > LEASTACK (HIGH)      /* LEA STACK                         */
 
     /* MSP430 interrupt vectors */
-
+/*
     .int00       : {}               > INT00
     .int01       : {}               > INT01
     .int02       : {}               > INT02
@@ -380,9 +386,9 @@ SECTIONS
     TIMER0_B0    : { * ( .int51 ) } > INT51 type = VECT_INIT
     COMP_E       : { * ( .int52 ) } > INT52 type = VECT_INIT
     UNMI         : { * ( .int53 ) } > INT53 type = VECT_INIT
-    SYSNMI       : { * ( .int54 ) } > INT54 type = VECT_INIT
-    .reset       : {}               > RESET  /* MSP430 reset vector         */
-
+    SYSNMI       : { * ( .int54 ) } > INT54 type = VECT_INIT*/
+    .reset       : {}               > RESET  /* MSP430 reset vector
+*/
 }
 /****************************************************************************/
 /* MPU/IPE SPECIFIC MEMORY SEGMENT DEFINITONS                               */
@@ -471,5 +477,3 @@ SECTIONS
 /****************************************************************************/
 
 -l msp430fr60471.cmd
-
-

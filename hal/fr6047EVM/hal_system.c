@@ -173,23 +173,12 @@ uint16_t hal_system_ButtonsCheck(void)
 void hal_system_WatchdogInit(void)
 {
 #ifdef __WATCHDOG_ENABLE__
-#if(APPLICATION_ENABLE_ABSTOF_DTOF_OFFSET_CALIBRATION == true)
-    // Enable watchdog timer
-    // Delay set to ~512K @ ~10K = 51.2sec
+    //Enable watchdog timer
+    // Delay set to ~32K @ ~10K = 51sec
     WDT_A_initWatchdogTimer(__MSP430_BASEADDRESS_WDT_A__,
                             WDT_A_CLOCKSOURCE_VLOCLK,
                             WDT_A_CLOCKDIVIDER_512K);
-#else
-    // Enable watchdog timer
-    // Delay set to ~32K @ ~10K = 3.2sec
-    WDT_A_initWatchdogTimer(__MSP430_BASEADDRESS_WDT_A__,
-                            WDT_A_CLOCKSOURCE_VLOCLK,
-                            WDT_A_CLOCKDIVIDER_32K);
-#endif
-    WDT_A_start(__MSP430_BASEADDRESS_WDT_A__);
-#else
-    // Stop watchdog timer
-    WDT_A_hold(__MSP430_BASEADDRESS_WDT_A__);
+
 #endif
 }
 

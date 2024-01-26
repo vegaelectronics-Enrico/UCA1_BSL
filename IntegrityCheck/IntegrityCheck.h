@@ -15,19 +15,28 @@
 #include "UI/LCD_custom.h"
 #include "Display_UI/Display_UI.h"
 
-#define FW_CRC32_LOCATION      0x4000
+#define FW_CRC32_LOCATION      0x3F800
 
-#define FW_FRAM_START          0x4004
-#define FW_FRAM_LENGTH         0xBF7C
-#define FW_FRAM_STOP           FW_FRAM_START + FW_FRAM_LENGTH - 1
+//ATTENZIONE: i blocchi di FRAM consecutivi devono essere divisibili per STEP_SIZE
+
+#define FW_FRAM_START          0x7C00
+#define FW_FRAM_START_CHECK    FW_FRAM_START
+#define FW_FRAM_STOP           0xFDFF
+#define FW_FRAM_STOP_CHECK     FW_FRAM_STOP - 2 //do not check the last 2 bytes of the block (FRAM delimiter)
+
 
 #define FW_FRAM2_START         0x10000
-#define FW_FRAM2_LENGTH        0x30000
-#define FW_FRAM2_STOP          FW_FRAM2_START + FW_FRAM2_LENGTH - 1
+#define FW_FRAM2_START_CHECK   FW_FRAM2_START + 2   //do not check the first 2 bytes of the block (FRAM delimiter)
+#define FW_FRAM2_STOP          0x3F7FF
+#define FW_FRAM2_STOP_CHECK    FW_FRAM2_STOP - 2 //do not check the last 2 bytes of the block (FRAM delimiter)
+
+#define FW_BOOT_WR_BLOCK1_START     FW_FRAM_START
+#define FW_BOOT_WR_BLOCK1_STOP      FW_FRAM_STOP
+#define FW_BOOT_WR_BLOCK2_START     FW_FRAM2_START
+#define FW_BOOT_WR_BLOCK2_STOP      0x3FBFF
 
 #define STEP_SIZE 1024
 
-#warning "impostare valori definitivi"
 #define FW_CHECK_SECONDS       36000
 #define PAR_CHECK_SECONDS      600
 #define EE_CHECK_SECONDS       600

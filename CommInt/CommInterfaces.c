@@ -161,10 +161,9 @@ bool UCB1_SPI_SendReceiveBytes_420 (unsigned char *outData, unsigned char *inDat
 
 void Init_UCA1_UART(void)
 {
-    _rs485Parity_en rs485ParitySet;
-    uint8_t StopBitsSet;
+    _rs485Parity_en rs485ParitySet = noParity;
+    uint8_t StopBitsSet = 1;
     BaudrateBps = 57600;
-    rs485ParitySet = noParity;
 
     EUSCI_A_SPI_disable (EUSCI_A1_BASE);
     GPIO_setAsPeripheralModuleFunctionInputPin(GPIO_PORT_P1, GPIO_PIN2 + GPIO_PIN3, GPIO_PRIMARY_MODULE_FUNCTION);
@@ -184,18 +183,6 @@ void Init_UCA1_UART(void)
 
     EUSCI_A_UART_init(EUSCI_A1_BASE, &UCA1_UART_par);
     EUSCI_A_UART_enable (EUSCI_A1_BASE);
-#ifdef USE_DMA_RX
-    /*
-     * DMA config
-     */
-    DMA0CTL &= ~DMAEN;
-    DMACTL0 = DMA0TSEL_16; // USCIA1RxIFG triggered
-    DMA0SAL = (uint16_t)&UCA1RXBUF;    // Source address
-    DMA0DAL = (uint16_t)RS485_Data.Data;   //destination address
-    DMA0SZ = sizeof(RS485_Data.Data);
-    DMA0CTL = DMASBDB + DMADSTINCR_3 + DMADT_4;
-    DMA0CTL |= DMAEN;
-#endif
 }
 
 //--
@@ -224,17 +211,11 @@ void UCA1_UART_SendBytes(uint8_t* data, uint16_t nbytes)
         }
 }
 
-
-
 //--
 void RS485_StartReceive(void)
 {
     RS485_DE_l;
     RS485_RE_l;
-    EUSCI_A_UART_clearInterrupt(EUSCI_A1_BASE,EUSCI_A_UART_RECEIVE_INTERRUPT);
-#ifndef USE_DMA_RX
-    EUSCI_A_UART_enableInterrupt(EUSCI_A1_BASE,EUSCI_A_UART_RECEIVE_INTERRUPT);
-#endif
 }
 
 //--
@@ -243,8 +224,6 @@ void RS485_StopReceive(void)
 {
     RS485_DE_l;
     RS485_RE_h;
-    EUSCI_A_UART_disableInterrupt(EUSCI_A1_BASE,EUSCI_A_UART_RECEIVE_INTERRUPT);
-    EUSCI_A_UART_clearInterrupt(EUSCI_A1_BASE,EUSCI_A_UART_RECEIVE_INTERRUPT);
 }
 
 //--
@@ -252,8 +231,6 @@ void RS485_StopReceive(void)
 void RS485_StartTransmit(void)
 {
     RS485_DE_h;
-    EUSCI_A_UART_clearInterrupt(EUSCI_A1_BASE,EUSCI_A_UART_TRANSMIT_INTERRUPT);
-    EUSCI_A_UART_enableInterrupt(EUSCI_A1_BASE,EUSCI_A_UART_TRANSMIT_INTERRUPT);
 }
 
 //--
@@ -261,8 +238,6 @@ void RS485_StartTransmit(void)
 void RS485_StopTransmit(void)
 {
     RS485_DE_l;
-    EUSCI_A_UART_disableInterrupt(EUSCI_A1_BASE,EUSCI_A_UART_TRANSMIT_INTERRUPT);
-    EUSCI_A_UART_clearInterrupt(EUSCI_A1_BASE,EUSCI_A_UART_TRANSMIT_INTERRUPT);
 }
 
 //--
