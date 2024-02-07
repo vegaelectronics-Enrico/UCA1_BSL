@@ -12,7 +12,7 @@
 
 _sysConfig_t sysConfig = {0};
 
-_SharedCtrlStruct_t* SharedCtrlStruct = 0x43FA8;    //point to the shared FRAM data control struct
+_SharedCtrlStruct_t* SharedCtrlStruct = 0x43EFC;    //point to the shared FRAM data control struct
 
 
 //--

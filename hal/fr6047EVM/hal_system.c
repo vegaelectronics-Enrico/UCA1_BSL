@@ -37,9 +37,7 @@ void hal_system_Init(void)
     hal_lcd_turnoffLCD();
 #endif
     LCD_init();
-    //hal_system_LEDOff(HAL_SYS_LED_0);	/* Clear LED1 and LED2 if there are no errors	*/
-    //hal_system_LEDOff(HAL_SYS_LED_1);
-    //hal_system_LEDOff(HAL_SYS_LED_2);
+
 }
 
 void hal_system_LEDOff(uint8_t LEDs)
@@ -186,7 +184,6 @@ void hal_system_WatchdogInit(void)
 void hal_system_WatchdogFeed(void)
 {
 #ifdef __WATCHDOG_ENABLE__
-    // Feed watchdog timer
     WDT_A_resetTimer(__MSP430_BASEADDRESS_WDT_A__);
 #endif
 }

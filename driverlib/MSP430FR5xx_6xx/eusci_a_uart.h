@@ -297,7 +297,7 @@ extern void EUSCI_A_UART_transmitData(uint16_t baseAddress,
 //
 //*****************************************************************************
 extern uint8_t EUSCI_A_UART_receiveData(uint16_t baseAddress);
-extern uint8_t EUSCI_A_UART_receiveData_timeout (uint16_t baseAddress, uint32_t timeoutSet, bool* hasTimeout);
+extern uint8_t EUSCI_A_UART_receiveData_timeout (uint16_t baseAddress, bool* hasTimeout);
 
 //*****************************************************************************
 //

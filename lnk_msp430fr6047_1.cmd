@@ -78,7 +78,7 @@ MEMORY
 
     FRAM_PAR_LOG			: origin = 0x3FC00,length = 0x0400	//parameters log modify attempt
     FRAM_USS_PARAM			: origin = 0x40000,length = 0x400	//data section reserved to USS FRAM variables / parameters
-    FRAM_VAR				: origin = 0x40400,length = 0x3B00	//data section used as RAM for variables
+    FRAM_VAR				: origin = 0x40400,length = 0x3AFC	//data section used as RAM for variables
     OTHER_FRAM_NO_ERASE		: origin = 0x43F00,length = 0xAC
     TOTALIZERS				: origin = 0x43FAC,length = 0x34	//data section reserved to store the totalizers struct and a backup copy
     VERSION                 : origin = 0x43FE0,length = 0x0008

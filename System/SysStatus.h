@@ -42,9 +42,14 @@ typedef struct
 {
     unsigned RebootFromModbus :1;
     unsigned HSPLL_resetBOR :1;
-    unsigned NU: 14;
-    uint16_t CtrlUINT;
+    unsigned REED_resetBOR :1;
+    unsigned BSL_loadStarted :1;
+    unsigned BSL_loadCompleted :1;
+    unsigned NU: 11;
+    uint8_t LastExecutedFwVer;
+    uint8_t LastExecutedFwRev;
 }_SharedCtrlStruct_t;
+
 
 extern _SharedCtrlStruct_t* SharedCtrlStruct;
 

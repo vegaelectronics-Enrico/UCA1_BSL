@@ -42,6 +42,8 @@ bool HandleLine(void);
  * SPI_EEPROM   > EUSCI_B1
  */
 
+#define TIMEOUT_COUNT 20
+
 #define ARRAY_SIZE  250
 char RxArray[ARRAY_SIZE] = {0};
 uint16_t DecodedFramData;
@@ -55,11 +57,13 @@ uint16_t ReceivedCRC16 = 0;
 uint16_t *FramIntAddressPointer;
 uint32_t BytesCounterWR = 0;
 bool ValidAddressReceived = false;
+bool OpStarted = false;
 char AddressString[10];
 char Crc16String[5];
 char AddressHexString[10];
 char SingleIntHex[6];
 uint8_t TimeputToMainFw = 5;
+uint16_t TimeoutsCount = TIMEOUT_COUNT;
 
 typedef union
 {
@@ -91,11 +95,20 @@ void main(void)
     //uint16_t reset_source = 0x00;
     hal_system_Init();
     /*
-     * if the system booted after a modbus or HSPLL supervisor BOR jump immediately to the main program;
+     * if the system booted after a modbus or HSPLL supervisor BOR jump immediately to the main program; they can't be both TRUE
      * the flags must be cleared by the main program
      */
-    if(SharedCtrlStruct->RebootFromModbus || SharedCtrlStruct->HSPLL_resetBOR)
+    if((SharedCtrlStruct->RebootFromModbus || SharedCtrlStruct->HSPLL_resetBOR) && (SharedCtrlStruct->RebootFromModbus != SharedCtrlStruct->HSPLL_resetBOR))
         CallAddress( 0x7C80 );
+    /*
+     * if both the log completed and log started flags are set clear them because is not possible
+     */
+    if(SharedCtrlStruct->BSL_loadStarted && SharedCtrlStruct->BSL_loadCompleted)
+    {
+        SharedCtrlStruct->BSL_loadStarted = false;
+        SharedCtrlStruct->BSL_loadCompleted = false;
+    }
+
     //--
     // Initializes the basic functionality of the system
     //TimersInit();
@@ -105,73 +118,88 @@ void main(void)
     LcdUpdate();
     Init_UCA1_UART();
     RS485_StartReceive();
-    while(1)
+    bool RxTimeout = false;
+    bool DecLineRes = true;
+    OpStarted = false;
+    while((TimeoutsCount > 0) && DecLineRes && (RxCount < ARRAY_SIZE))
     {
-        //__delay_cycles(20000000);
-
-        bool RxTimeout = false;
-        bool DecLineRes = true;
-        while(!RxTimeout && DecLineRes && (RxCount < ARRAY_SIZE))
+        RxArray[RxCount] = EUSCI_A_UART_receiveData_timeout(EUSCI_A1_BASE, &RxTimeout);
+        if((RxArray[RxCount] == '#') && (DelimitersRec < 2))
         {
-            RxArray[RxCount] = EUSCI_A_UART_receiveData_timeout(EUSCI_A1_BASE, 10000000, &RxTimeout);
-            if((RxArray[RxCount] == '#') && (DelimitersRec < 2))
+            DelimitersRec++;
+            if(DelimitersRec == 1)
+            FirstDelimiterPos = RxCount;
+            if(DelimitersRec == 2)
             {
-                DelimitersRec++;
-                if(DelimitersRec == 1)
-                FirstDelimiterPos = RxCount;
-                if(DelimitersRec == 2)
-                {
-                    NextPacketSize = atoi(&RxArray[FirstDelimiterPos+1]);
-                    SecondDelimiterPos = RxCount;
-                }
-                RxCount++;
+                NextPacketSize = atoi(&RxArray[FirstDelimiterPos+1]);
+                SecondDelimiterPos = RxCount;
             }
-            else
+            RxCount++;
+        }
+        else
+        {
+            if(RxCount == (NextPacketSize + SecondDelimiterPos + 4))
             {
-                if(RxCount == (NextPacketSize + SecondDelimiterPos + 4))
+                //check the received lines(s) CRC16
+                ReceivedCRC16 = 0;
+                memset(Crc16String, 0, 5);
+                strncpy(Crc16String, &RxArray[SecondDelimiterPos + NextPacketSize + 1], 4);
+                ReceivedCRC16 = strtol(Crc16String, &pEnd, 16);
+                GenerateCRC16((uint8_t*)RxArray, SecondDelimiterPos + NextPacketSize + 1, &CRCcalc.bytes.CRC_H, &CRCcalc.bytes.CRC_L);
+                RS485_StopReceive();
+                RS485_StartTransmit();
+                __delay_cycles(5000);
+                if(CRCcalc.CRC16 == ReceivedCRC16)
                 {
-                    //check the received lines(s) CRC16
-                    ReceivedCRC16 = 0;
-                    memset(Crc16String, 0, 5);
-                    strncpy(Crc16String, &RxArray[SecondDelimiterPos + NextPacketSize + 1], 4);
-                    ReceivedCRC16 = strtol(Crc16String, &pEnd, 16);
-                    GenerateCRC16((uint8_t*)RxArray, SecondDelimiterPos + NextPacketSize + 1, &CRCcalc.bytes.CRC_H, &CRCcalc.bytes.CRC_L);
-                    RS485_StopReceive();
-                    RS485_StartTransmit();
-                    __delay_cycles(4000);
-                    if(CRCcalc.CRC16 == ReceivedCRC16)
+                    if(!OpStarted)   //must be a dedicated RAM flag because the FRAM one will not be clared if an attempt fali
                     {
-                        DecLineRes = HandleLine();   //CRC OK: handle the received line
-                        EUSCI_A_UART_transmitData(EUSCI_A1_BASE, (char)'O');
-                        EUSCI_A_UART_transmitData(EUSCI_A1_BASE, (char)'K');
-                        EUSCI_A_UART_transmitData(EUSCI_A1_BASE, (char)'\n');
-                        EUSCI_A_UART_transmitData(EUSCI_A1_BASE, (char)'\r');
+                        LCD_row1_writeLoad();
+                        OpStarted = true;
                     }
-                    else
-                    {
-                        EUSCI_A_UART_transmitData(EUSCI_A1_BASE, (char)'C');
-                        EUSCI_A_UART_transmitData(EUSCI_A1_BASE, (char)'R');
-                        EUSCI_A_UART_transmitData(EUSCI_A1_BASE, (char)'C');
-                        EUSCI_A_UART_transmitData(EUSCI_A1_BASE, (char)'E');
-                        EUSCI_A_UART_transmitData(EUSCI_A1_BASE, (char)'R');
-                        EUSCI_A_UART_transmitData(EUSCI_A1_BASE, (char)'R');
-                        EUSCI_A_UART_transmitData(EUSCI_A1_BASE, (char)'\n');
-                        EUSCI_A_UART_transmitData(EUSCI_A1_BASE, (char)'\r');
-                    }
-                    RS485_StopTransmit();
-                    RS485_StartReceive();
-                    RxCount = 0;
-                    DelimitersRec = 0;
-                    memset(RxArray, 0, ARRAY_SIZE);
+
+                    DecLineRes = HandleLine();   //CRC OK: handle the received line
+                    EUSCI_A_UART_transmitData(EUSCI_A1_BASE, (char)'O');
+                    EUSCI_A_UART_transmitData(EUSCI_A1_BASE, (char)'K');
+                    EUSCI_A_UART_transmitData(EUSCI_A1_BASE, (char)'\n');
+                    EUSCI_A_UART_transmitData(EUSCI_A1_BASE, (char)'\r');
+                    TimeoutsCount = TIMEOUT_COUNT;
                 }
                 else
-                    RxCount++;
+                {
+                    EUSCI_A_UART_transmitData(EUSCI_A1_BASE, (char)'C');
+                    EUSCI_A_UART_transmitData(EUSCI_A1_BASE, (char)'R');
+                    EUSCI_A_UART_transmitData(EUSCI_A1_BASE, (char)'C');
+                    EUSCI_A_UART_transmitData(EUSCI_A1_BASE, (char)'E');
+                    EUSCI_A_UART_transmitData(EUSCI_A1_BASE, (char)'R');
+                    EUSCI_A_UART_transmitData(EUSCI_A1_BASE, (char)'R');
+                    EUSCI_A_UART_transmitData(EUSCI_A1_BASE, (char)'\n');
+                    EUSCI_A_UART_transmitData(EUSCI_A1_BASE, (char)'\r');
+                }
+                RS485_StopTransmit();
+                RS485_StartReceive();
+                RxCount = 0;
+                DelimitersRec = 0;
+                memset(RxArray, 0, ARRAY_SIZE);
             }
-        hal_system_WatchdogFeed();
+            else
+                if(!RxTimeout)
+                    RxCount++;
         }
-        __delay_cycles(4000);
+        if(RxTimeout)
+        {
+            TimeoutsCount--;
+            LCD_progress_bar_row1(((float)TimeoutsCount * 100) /  TIMEOUT_COUNT);
+        }
+
+        EXT_WDT_TOGGLE;
+        hal_system_WatchdogFeed();
+    }
+    if(SharedCtrlStruct->BSL_loadCompleted || !SharedCtrlStruct->BSL_loadStarted)
+    {
         CallAddress( 0x7C80 );
     }
+    PMM_trigBOR();
+#warning "gestire limitazione di iterazioni e poi entrare in uno stato di basso consumo per evitare di scaricare batterie in strumenti che si bloccano dopo caricamento fallito"
 }
 
 /*
@@ -194,6 +222,9 @@ bool HandleLine(void)
     }
     else if(RxArray[SecondDelimiterPos + 1] == 'q')
     {
+        SharedCtrlStruct->BSL_loadStarted = false;
+        SharedCtrlStruct->BSL_loadCompleted = true;
+        TimeoutsCount = 0;
         return true;
     }
     else
@@ -212,6 +243,11 @@ bool HandleLine(void)
                 if((((uint32_t)FramIntAddressPointer >= FW_FRAM_START) && ((uint32_t)FramIntAddressPointer <= FW_FRAM_STOP)) || (((uint32_t)FramIntAddressPointer >= FW_FRAM2_START) && ((uint32_t)FramIntAddressPointer <= FW_BOOT_WR_BLOCK2_STOP)))
                     *FramIntAddressPointer = DecodedFramData;
                 FramIntAddressPointer++;
+                if(!SharedCtrlStruct->BSL_loadStarted)
+                {
+                    SharedCtrlStruct->BSL_loadStarted = true;   //mark that the FRAM write operation has begun
+                    SharedCtrlStruct->BSL_loadCompleted = false;
+                }
             }
             __delay_cycles(1);
         }

@@ -243,5 +243,7 @@ void LCD_parameters_error(void);
 void LCD_lowVoltage(void);
 void LCD_bsl_info_view(unsigned char FwVer,unsigned char FwRev, unsigned long FwCRC32, firmwareId_t fwId);
 void LCD_row2_writeErr(_errView_t ErrorNumber);
+void LCD_row1_writeLoad(void);
+void LCD_progress_bar_row1(float Percent);
 void LCD_rtcc_view (void);
 #endif /* LCD_CUSTOM_H_ */

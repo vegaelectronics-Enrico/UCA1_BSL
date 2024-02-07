@@ -79,8 +79,8 @@ const unsigned char LCD_Char_Map[] =
     0xF2,				 //14: E
     0x72,				 //15: F
     0x00,			     //16: (blank)
-    0x70,				 //17: L
-    0x04,				 //18: -
+    0xE0,				 //17: L
+    0x02,				 //18: -
     0x10,				 //19: _
     0xE2,			     //20: t
     0x3A,			     //21: J
@@ -276,6 +276,20 @@ void LCD_bsl_info_view(unsigned char FwVer,unsigned char FwRev, unsigned long Fw
 }
 
 //--
+uint8_t NdashToSet;
+void LCD_progress_bar_row1(float Percent)
+{
+    LCD_clear_row1();
+    NdashToSet = (uint8_t)((Percent / 100) * 9);
+    while(NdashToSet > 0)
+    {
+        LCD_digit_row1[9-NdashToSet] = CHAR_DASH;
+        NdashToSet--;
+    }
+    LCD_fill_row1(0);
+}
+
+//--
 
 void LCD_rtcc_view (void)
 {
@@ -304,7 +318,6 @@ void LCD_rtcc_view (void)
     ShowDot(2, 7);
     ICON_clock_ON;
     ICON_calendar_ON;
-
 }
 
 //--
@@ -385,6 +398,22 @@ void LCD_row2_writeErr(_errView_t ErrorNumber)
     LCD_fill_row2( 0 );
 }
 
+
+//--
+void LCD_row1_writeLoad(void)
+{
+    LCD_clear_row1();
+    LCD_digit_row1[0] = CHAR_L;
+    LCD_digit_row1[1] = CHAR_o;
+    LCD_digit_row1[2] = CHAR_A;
+    LCD_digit_row1[3] = CHAR_d;
+    LCD_digit_row1[4] = CHAR_I;
+    LCD_digit_row1[5] = CHAR_n;
+    LCD_digit_row1[6] = CHAR_g;
+    LCD_fill_row1( 0 );
+}
+
+//--
 
 ////////////////////////////////////////////////
 //visualizza schermata fw corrotti

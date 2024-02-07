@@ -132,9 +132,9 @@ uint8_t EUSCI_A_UART_receiveData (uint16_t baseAddress)
     return ( HWREG16(baseAddress + OFS_UCAxRXBUF)) ;
 }
 
-uint8_t EUSCI_A_UART_receiveData_timeout (uint16_t baseAddress, uint32_t timeoutSet, bool* hasTimeout)
+uint8_t EUSCI_A_UART_receiveData_timeout (uint16_t baseAddress, bool* hasTimeout)
 {
-    uint32_t timeoutCount = timeoutSet;
+    uint32_t timeoutCount = 500000;
     //If interrupts are not used, poll for flags
     if (!(HWREG16(baseAddress + OFS_UCAxIE) & UCRXIE)){
         //Poll for receive interrupt flag
