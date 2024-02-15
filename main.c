@@ -151,7 +151,7 @@ void main(void)
                 __delay_cycles(5000);
                 if(CRCcalc.CRC16 == ReceivedCRC16)
                 {
-                    if(!OpStarted)   //must be a dedicated RAM flag because the FRAM one will not be clared if an attempt fali
+                    if(!OpStarted)   //must be a dedicated RAM flag because the FRAM one will not be cleared if an attempt fails
                     {
                         LCD_row1_writeLoad();
                         OpStarted = true;
@@ -249,6 +249,10 @@ bool HandleLine(void)
                     SharedCtrlStruct->BSL_loadCompleted = false;
                 }
             }
+            __delay_cycles(1);
+        }
+        else
+        {
             __delay_cycles(1);
         }
     }

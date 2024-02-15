@@ -20,11 +20,11 @@
 //
 
 #define FW_VER  1
-#define FW_REV  0
+#define FW_REV  1
 
-#define FW_DAY      11
-#define FW_MONTH    09
-#define FW_YEAR     23
+#define FW_DAY      12
+#define FW_MONTH    02
+#define FW_YEAR     24
 
 
 extern uint8_t TimeputToMainFw;
