@@ -58,6 +58,7 @@ uint16_t *FramIntAddressPointer;
 uint32_t BytesCounterWR = 0;
 bool ValidAddressReceived = false;
 bool OpStarted = false;
+bool LastRxCRCerr = false;
 char AddressString[10];
 char Crc16String[5];
 char AddressHexString[10];
@@ -174,6 +175,7 @@ void main(void)
                     EUSCI_A_UART_transmitData(EUSCI_A1_BASE, (char)'R');
                     EUSCI_A_UART_transmitData(EUSCI_A1_BASE, (char)'\n');
                     EUSCI_A_UART_transmitData(EUSCI_A1_BASE, (char)'\r');
+                    LastRxCRCerr = true;
                 }
                 RS485_StopTransmit();
                 RS485_StartReceive();
@@ -185,8 +187,9 @@ void main(void)
                 if(!RxTimeout)
                     RxCount++;
         }
-        if(RxTimeout)
+        if(RxTimeout || LastRxCRCerr)
         {
+            LastRxCRCerr = false;
             TimeoutsCount--;
             LCD_progress_bar_row1(((float)TimeoutsCount * 100) /  TIMEOUT_COUNT);
         }
