@@ -14,7 +14,7 @@ void GenerateCRC16(unsigned char *ByteStart, unsigned short dataLenght, unsigned
     unsigned short i;
 
 
-    CheckSum = 0xffff;
+    CheckSum = 0xCBFE;
     for (j = 0; j < dataLenght; j++)
     {
         CheckSum = CheckSum^(unsigned short) (*ByteStart); // XOR
@@ -53,7 +53,7 @@ bool CheckCRC16(unsigned char *ByteStart, unsigned short dataLenght, unsigned ch
     unsigned short i;
 
 
-    CheckSum = 0xffff;
+    CheckSum = 0xCBFE;
     for (j = 0; j < dataLenght; j++)
     {
         CheckSum = CheckSum^(unsigned short) (*ByteStart); // XOR
