@@ -78,8 +78,6 @@ typedef union
 
 CRCcalc_t CRCcalc = {0};
 
-//--
-
 /*** FUNCTIONS ***/
 
 static inline void CallAddress(unsigned int addr)

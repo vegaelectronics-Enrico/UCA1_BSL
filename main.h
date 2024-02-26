@@ -20,9 +20,9 @@
 //
 
 #define FW_VER  1
-#define FW_REV  1
+#define FW_REV  2
 
-#define FW_DAY      12
+#define FW_DAY      21
 #define FW_MONTH    02
 #define FW_YEAR     24
 

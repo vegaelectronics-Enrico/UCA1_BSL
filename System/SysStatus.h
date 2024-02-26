@@ -48,6 +48,8 @@ typedef struct
     unsigned NU: 11;
     uint8_t LastExecutedFwVer;
     uint8_t LastExecutedFwRev;
+    uint16_t LastReceivedPassword;
+    uint8_t UnusedBytes[158];
 }_SharedCtrlStruct_t;
 
 

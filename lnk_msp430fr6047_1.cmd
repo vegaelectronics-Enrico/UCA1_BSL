@@ -73,13 +73,14 @@ MEMORY
     DELIMITER_2				: origin = 0x10000, length = 2
     MAIN_PROGRAM2         	: origin = 0x10002,length = 0x2F7FC
     DELIMITER_3				: origin = 0x3F7FE, length = 2
-    FW_CRC32				: origin = 0x3F800, length = 0x4
-    FW_OTHER_INFO			: origin = 0x3F804, length = 0x3FC
-
-    FRAM_PAR_LOG			: origin = 0x3FC00,length = 0x0400	//parameters log modify attempt
+    FW_CRC32				: origin = 0x3F800, length = 0x4, fill = 0xFFFF
+    FW_OTHER_INFO			: origin = 0x3F804, length = 6
+    FRAM_FW_LOG  			: origin =  0x3F80A, length = 0x03F6, fill = 0xFFFF
+    FRAM_PAR_LOG			: origin = 0x3FC00,length = 0x0400, fill = 0xFFFF	//parameters log modify attempt
     FRAM_USS_PARAM			: origin = 0x40000,length = 0x400	//data section reserved to USS FRAM variables / parameters
     FRAM_VAR				: origin = 0x40400,length = 0x3AFC	//data section used as RAM for variables
-    OTHER_FRAM_NO_ERASE		: origin = 0x43F00,length = 0xAC
+    RTCC_FRAM				: origin = 0x43F00,length = 8
+    SHARED_FRAM_CTRL		: origin = 0x43F08,length = 0xA4    //shared section between main FW and BSL that hosts a 4-byte data structure to allow crossed control operations
     TOTALIZERS				: origin = 0x43FAC,length = 0x34	//data section reserved to store the totalizers struct and a backup copy
     VERSION                 : origin = 0x43FE0,length = 0x0008
     LIB_VERSION             : origin = 0x43FE8,length = 0x0008
