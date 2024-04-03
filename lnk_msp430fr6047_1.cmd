@@ -68,11 +68,11 @@ MEMORY
     BOOTLOADER				: origin = 0x4000, length = 0x3C00
     //RELOC_INT				: origin = 0x7C00, length = 0x80	//re-defined interrupt table
     FREE_MEM_1				: origin = 0x7C6E, length = 0x12
-    MAIN_PROGRAM            : origin = 0x7C80, length = 0x817E
-    DELIMITER_1				: origin = 0xFDFE, length = 2	//delimiters are necessary to have the code sections starting with @..... and ending before another @...... on the .txt file
-    DELIMITER_2				: origin = 0x10000, length = 2
-    MAIN_PROGRAM2         	: origin = 0x10002,length = 0x2F7FC
-    DELIMITER_3				: origin = 0x3F7FE, length = 2
+    MAIN_PROGRAM            : origin = 0x7C80, length = 0x8180
+    //DELIMITER_1				: origin = 0xFDFE, length = 2	//delimiters are necessary to have the code sections starting with @..... and ending before another @...... on the .txt file
+    //DELIMITER_2				: origin = 0x10000, length = 2
+    MAIN_PROGRAM2         	: origin = 0x10000,length = 0x2F800
+    //DELIMITER_3				: origin = 0x3F7FE, length = 2
     FW_CRC32				: origin = 0x3F800, length = 0x4, fill = 0xFFFF
     FW_OTHER_INFO			: origin = 0x3F804, length = 6
     FRAM_FW_LOG  			: origin =  0x3F80A, length = 0x03F6, fill = 0xFFFF

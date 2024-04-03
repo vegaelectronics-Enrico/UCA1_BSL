@@ -69,7 +69,6 @@ asm(" BR &0007C64h ");
 asm(" BR &0007C66h ");
 asm(" BR &0007C68h ");
 asm(" BR &0007C6Ah ");//54
-//asm(" BR &0007C6Ch ");//55 - RESET
 }
 
 #pragma RETAIN (proxy_vectors)  //forza a generare output anche se la variabile costante non è mai utilizzata nel codice

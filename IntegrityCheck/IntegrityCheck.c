@@ -120,12 +120,12 @@ crc_check_en FirmwareCRC32_handle(void)
             {
                 ResidualStep = FW_FRAM_STOP - NextAddrCRC32 + 1;
                 FwCRC32_calc = crc32_engine( FwCRC32_calc, ByteFwPtr, ResidualStep );
-                NextAddrCRC32 = FW_FRAM2_START;
+                NextAddrCRC32 = FW_FRAM_STOP;
                 ByteFwPtr = (uint8_t*)NextAddrCRC32;
             }
         }
 
-        else if((NextAddrCRC32 >= FW_FRAM2_START) && (NextAddrCRC32 <= FW_FRAM2_STOP))
+        /*else if((NextAddrCRC32 >= FW_FRAM2_START) && (NextAddrCRC32 <= FW_FRAM2_STOP))
         {
             if((NextAddrCRC32 + STEP_SIZE - 1) <= FW_FRAM2_STOP)
             {
@@ -138,8 +138,8 @@ crc_check_en FirmwareCRC32_handle(void)
                 ResidualStep = FW_FRAM2_STOP - NextAddrCRC32 + 1;
                 FwCRC32_calc = crc32_engine( FwCRC32_calc, ByteFwPtr, ResidualStep );
             }
-        }
-        else if(NextAddrCRC32 > FW_FRAM2_STOP)
+        }*/
+        else if(NextAddrCRC32 > FW_FRAM_STOP)
         {
             CheckOngoing = false;
 

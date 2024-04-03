@@ -241,7 +241,7 @@ bool HandleLine(void)
                 strncpy(&SingleIntHex[0], &RxArray[i + SecondDelimiterPos + 3], 2);
                 strncpy(&SingleIntHex[2], &RxArray[i + SecondDelimiterPos + 1], 2);
                 DecodedFramData = strtol(SingleIntHex, &pEnd, 16);
-                if((((uint32_t)FramIntAddressPointer >= FW_FRAM_START) && ((uint32_t)FramIntAddressPointer <= FW_FRAM_STOP)) || (((uint32_t)FramIntAddressPointer >= FW_FRAM2_START) && ((uint32_t)FramIntAddressPointer <= FW_BOOT_WR_BLOCK2_STOP)))
+                if(((uint32_t)FramIntAddressPointer >= FW_FRAM_START) && ((uint32_t)FramIntAddressPointer <= FW_FRAM_STOP))
                     *FramIntAddressPointer = DecodedFramData;
                 FramIntAddressPointer++;
                 if(!SharedCtrlStruct->BSL_loadStarted)
