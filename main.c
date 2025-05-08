@@ -47,16 +47,18 @@ bool HandleLine(void);
 #define ARRAY_SIZE  250
 char RxArray[ARRAY_SIZE] = {0};
 uint16_t DecodedFramData;
-uint8_t RxCount = 0;
+int16_t RxCount = 0;
 uint8_t DelimitersRec = 0;
 uint8_t FirstDelimiterPos = 0;
 uint8_t SecondDelimiterPos = 0;
+uint8_t ThirdDelimiterPos = 0;
+uint8_t FourthDelimiterPos = 0;
 uint16_t NextPacketSize = 0;
 uint32_t FramAddress;
 uint16_t ReceivedCRC16 = 0;
+uint16_t HexLineCRC16 = 0;
 uint16_t *FramIntAddressPointer;
 uint32_t BytesCounterWR = 0;
-bool ValidAddressReceived = false;
 bool OpStarted = false;
 bool LastRxCRCerr = false;
 char AddressString[10];
@@ -123,28 +125,40 @@ void main(void)
     while((TimeoutsCount > 0) && DecLineRes && (RxCount < ARRAY_SIZE))
     {
         RxArray[RxCount] = EUSCI_A_UART_receiveData_timeout(EUSCI_A1_BASE, &RxTimeout);
-        if((RxArray[RxCount] == '#') && (DelimitersRec < 2))
+        if(!RxTimeout)
         {
-            DelimitersRec++;
-            if(DelimitersRec == 1)
-            FirstDelimiterPos = RxCount;
-            if(DelimitersRec == 2)
+            if((RxArray[RxCount] == '@') && (DelimitersRec == 0))
             {
-                NextPacketSize = atoi(&RxArray[FirstDelimiterPos+1]);
+                DelimitersRec++;
+                FirstDelimiterPos = RxCount;
+            }
+
+            else if((RxArray[RxCount] == '#') && (DelimitersRec == 1))
+            {
+                DelimitersRec++;
                 SecondDelimiterPos = RxCount;
             }
-            RxCount++;
-        }
-        else
-        {
-            if(RxCount == (NextPacketSize + SecondDelimiterPos + 4))
+
+            else if((RxArray[RxCount] == '#') && (DelimitersRec == 2))
             {
-                //check the received lines(s) CRC16
+                DelimitersRec++;
+                ThirdDelimiterPos = RxCount;
+                NextPacketSize = atoi(&RxArray[SecondDelimiterPos + 1]);
+            }
+
+            else if((RxArray[RxCount] == '>') && (DelimitersRec == 3))
+            {
+                DelimitersRec++;
+                FourthDelimiterPos = RxCount;
+            }
+
+            else if((RxCount == (NextPacketSize + ThirdDelimiterPos + 5)) && (DelimitersRec == 4))
+            {
                 ReceivedCRC16 = 0;
                 memset(Crc16String, 0, 5);
-                strncpy(Crc16String, &RxArray[SecondDelimiterPos + NextPacketSize + 1], 4);
+                strncpy(Crc16String, &RxArray[FourthDelimiterPos + 1], 4);
                 ReceivedCRC16 = strtol(Crc16String, &pEnd, 16);
-                GenerateCRC16((uint8_t*)RxArray, SecondDelimiterPos + NextPacketSize + 1, &CRCcalc.bytes.CRC_H, &CRCcalc.bytes.CRC_L);
+                GenerateCRC16((uint8_t*)RxArray, FourthDelimiterPos + 1, &CRCcalc.bytes.CRC_H, &CRCcalc.bytes.CRC_L);
                 RS485_StopReceive();
                 RS485_StartTransmit();
                 __delay_cycles(5000);
@@ -177,29 +191,37 @@ void main(void)
                 }
                 RS485_StopTransmit();
                 RS485_StartReceive();
-                RxCount = 0;
+                RxCount = -1;
                 DelimitersRec = 0;
                 memset(RxArray, 0, ARRAY_SIZE);
             }
-            else
-                if(!RxTimeout)
-                    RxCount++;
+            RxCount++;
         }
-        if(RxTimeout || LastRxCRCerr)
+
+        else if(RxTimeout)
         {
-            LastRxCRCerr = false;
             TimeoutsCount--;
             LCD_progress_bar_row1(((float)TimeoutsCount * 100) /  TIMEOUT_COUNT);
         }
 
+        if(LastRxCRCerr)
+        {
+            if(TimeoutsCount > 0)
+                TimeoutsCount--;
+            LastRxCRCerr = false;
+        }
+
+
         EXT_WDT_TOGGLE;
         hal_system_WatchdogFeed();
+
+        if(SharedCtrlStruct->BSL_loadCompleted /*|| !SharedCtrlStruct->BSL_loadStarted*/)
+        {
+            CallAddress( 0x7C80 );
+        }
+        if(TimeoutsCount == 0)
+            PMM_trigBOR();
     }
-    if(SharedCtrlStruct->BSL_loadCompleted || !SharedCtrlStruct->BSL_loadStarted)
-    {
-        CallAddress( 0x7C80 );
-    }
-    PMM_trigBOR();
 #warning "gestire limitazione di iterazioni e poi entrare in uno stato di basso consumo per evitare di scaricare batterie in strumenti che si bloccano dopo caricamento fallito"
 }
 
@@ -213,50 +235,27 @@ void main(void)
 bool HandleLine(void)
 {
     char* pEnd;
-    if(RxArray[SecondDelimiterPos + 1] == '@')
-    {
-        //is an address
-        strncpy(AddressString, &RxArray[SecondDelimiterPos + 2], NextPacketSize - 1);
-        FramAddress = strtol(AddressString, &pEnd, 16);
-        FramIntAddressPointer = (uint16_t*)FramAddress;
-        ValidAddressReceived = true;
-    }
-    else if(RxArray[SecondDelimiterPos + 1] == 'q')
-    {
-        SharedCtrlStruct->BSL_loadStarted = false;
-        SharedCtrlStruct->BSL_loadCompleted = true;
-        TimeoutsCount = 0;
-        return true;
-    }
-    else
-    {
+
         //is data to be written
-        if(ValidAddressReceived)
+
+        DecodedFramData = 0;
+        uint8_t i;
+        for(i = 0; i < NextPacketSize; i+=4)
         {
-            DecodedFramData = 0;
-            uint8_t i;
-            for(i = 0; i < NextPacketSize; i+=4)
+            //copy and exchange the bytes order in the word
+            strncpy(&SingleIntHex[0], &RxArray[i + ThirdDelimiterPos + 3], 2);
+            strncpy(&SingleIntHex[2], &RxArray[i + ThirdDelimiterPos + 1], 2);
+            DecodedFramData = strtol(SingleIntHex, &pEnd, 16);
+            if(((uint32_t)FramIntAddressPointer >= FW_FRAM_START) && ((uint32_t)FramIntAddressPointer <= FW_FRAM_STOP))
+                *FramIntAddressPointer = DecodedFramData;
+            FramIntAddressPointer++;
+            if(!SharedCtrlStruct->BSL_loadStarted)
             {
-                //copy and exchange the bytes order in the word
-                strncpy(&SingleIntHex[0], &RxArray[i + SecondDelimiterPos + 3], 2);
-                strncpy(&SingleIntHex[2], &RxArray[i + SecondDelimiterPos + 1], 2);
-                DecodedFramData = strtol(SingleIntHex, &pEnd, 16);
-                if(((uint32_t)FramIntAddressPointer >= FW_FRAM_START) && ((uint32_t)FramIntAddressPointer <= FW_FRAM_STOP))
-                    *FramIntAddressPointer = DecodedFramData;
-                FramIntAddressPointer++;
-                if(!SharedCtrlStruct->BSL_loadStarted)
-                {
-                    SharedCtrlStruct->BSL_loadStarted = true;   //mark that the FRAM write operation has begun
-                    SharedCtrlStruct->BSL_loadCompleted = false;
-                }
+                SharedCtrlStruct->BSL_loadStarted = true;   //mark that the FRAM write operation has begun
+                SharedCtrlStruct->BSL_loadCompleted = false;
             }
-            __delay_cycles(1);
         }
-        else
-        {
-            __delay_cycles(1);
-        }
-    }
+        __delay_cycles(1);
     return true;
 }
 
